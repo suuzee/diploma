@@ -12,7 +12,15 @@ class User extends CI_Controller {
 
 		$email = $this -> input -> post('email');
         $password = $this -> input -> post('password');
-        $this -> user_model -> addAccount($email, $password);
+        $user = array(
+            'user_email' => $email,
+            'user_pwd' => $password,
+            'user_name' => $email,
+            'user_avatar' => 'http://q.qunarzz.com/diplomafe/src/images/avatar.jpg',
+            'user_desc' => '这个人很懒...',
+            'user_date' => date("Y-m-d h:i:s", time())
+        );
+        $this -> user_model -> addAccount($user);
         echo json_encode(
             array(
                 "status" => 0,

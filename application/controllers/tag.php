@@ -24,7 +24,7 @@ class Tag extends CI_Controller {
 
     public function addTag() {
         $status = 0;
-        $tag = $this -> input -> get('tagName');
+        $tag = $this -> input -> get('tag_name');
         $isHasTag = $this -> tag_model -> checkTag($tag);
         $message = '';
         $newTagId = null;
