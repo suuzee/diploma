@@ -6,43 +6,34 @@ class Question extends CI_Controller {
     public function __construct() {
 		parent::__construct();
 		$this -> load -> model('question_model');
+		$this -> load -> model('answer_model');
 	}
 
-    public function getQuestionList() {
-        $question_list = array(
-            "status" => 0,
-            "message" => "",
-            "data" => array(
-                array(
-                    "title" => "test question",
-                    "content" => "description, description, description, description, description",
-                    "avatar" => "/diplomafe/src/images/avatar.jpg",
-                    "author" => "Thomas",
-                    "lookNum" => "10",
-                    "answerNum" => "10",
-                    "id" => "1"
-                ),
-                array(
-                    "title" => "test question",
-                    "content" => "description, description, description, description, description",
-                    "avatar" => "/diplomafe/src/images/avatar.jpg",
-                    "author" => "Thomas",
-                    "lookNum" => "10",
-                    "answerNum" => "10",
-                    "id" => "1"
-                ),
-                array(
-                    "title" => "test question",
-                    "content" => "description, description, description, description, description",
-                    "avatar" => "/diplomafe/src/images/avatar.jpg",
-                    "author" => "Thomas",
-                    "lookNum" => "10",
-                    "answerNum" => "10",
-                    "id" => "1"
+    public function getQuestions() {
+        $status = 0;
+        $message = '';
+        $questions = $this -> question_model -> getQuestions();
+        if (!!!$questions) {
+            $status = 1;
+            $message = '获取列表失败';
+        } else {
+            foreach ($questions as $question) {
+                $questionId = $question -> question_id;
+                // 查标签
+                $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+                // 查评论数
+                $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+            }
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "questions" => $questions
                 )
             )
         );
-        echo json_encode($question_list);
     }
 
     public function saveQuestion() {
@@ -61,9 +52,9 @@ class Question extends CI_Controller {
         );
         $questionId = $this -> question_model -> saveQuestion($question);
         if (!!$questionId) {
-            for ($i = 0; $i < count($tags); $i ++) {
+            foreach ($tags as $tag) {
                 $data = array(
-                    'tag_id' => $tags[$i],
+                    'tag_id' => $tag,
                     'question_id' => $questionId
                 );
                 $this -> question_model -> saveQuestionTag($data);
