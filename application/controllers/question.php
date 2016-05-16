@@ -36,6 +36,31 @@ class Question extends CI_Controller {
         );
     }
 
+    public function getQuestion() {
+        $status = 0;
+        $message = '';
+        $questionId = $this -> input -> get("questionId");
+        $question = $this -> question_model -> getQuestion($questionId);
+        if (!!!$question) {
+            $status = 1;
+            $message = '获取问题失败';
+        } else {
+            // 查标签
+            $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+            // 查评论数
+            $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "question" => $question
+                )
+            )
+        );
+    }
+
     public function saveQuestion() {
         $status = 0;
         $message = '';

@@ -13,11 +13,19 @@ class Question_model extends CI_Model {
     }
 
     public function getQuestions() {
-        $this -> db -> select('q.*, u.user_name, u.user_avatar, q.question_look lookNum');
+        $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
         $this -> db -> from('t_questions q');
         $this -> db -> join('t_users u', 'q.question_author=u.user_id');
         $this -> db -> order_by('q.question_date', 'desc');
         return $this -> db -> get() -> result();
+    }
+
+    public function getQuestion($questionId) {
+        $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
+        $this -> db -> from('t_questions q');
+        $this -> db -> join('t_users u', 'q.question_author=u.user_id');
+        $this -> db -> where('q.question_id', $questionId);
+        return $this -> db -> get() -> row();
     }
 
     public function getQuestionTag($id) {
