@@ -7,6 +7,7 @@ class Question extends CI_Controller {
 		parent::__construct();
 		$this -> load -> model('question_model');
 		$this -> load -> model('answer_model');
+		$this -> load -> model('like_model');
 	}
 
     public function getQuestions() {
@@ -95,6 +96,65 @@ class Question extends CI_Controller {
                 "message" => $message,
                 "data" => array(
                     "message" => $message
+                )
+            )
+        );
+    }
+
+    public function getQuestionNumByUserId () {
+        $status = 0;
+        $message = '';
+        $userId = $this -> input -> get("userId");
+        $questionNum = $this -> question_model -> getQuestionNumByUser($userId);
+        $answerNum = $this -> question_model -> getAnswerNumByUser($userId);
+        $likeNum = $this -> like_model -> getLikeNumByUser($userId);
+        if (
+            (!!$questionNum || $questionNum === 0) &&
+            (!!$answerNum || $answerNum === 0) &&
+            (!!$likeNum || $likeNum === 0)
+        ) {
+            $status = 0;
+            $message = '获取数据成功';
+        } else {
+            $status = 1;
+            $message = '获取数据失败';
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "userQuestion" => $questionNum,
+                    "userAnswer" => $answerNum,
+                    "userLike" => $likeNum
+                )
+            )
+        );
+    }
+
+    public function getQuestionByUserId () {
+        $status = 0;
+        $message = '';
+        $userId = $this -> input -> get("userId");
+        $myselfQuestions = $this -> question_model -> getQuestions($userId);
+        $myselfAnswers = $this -> question_model -> getAnswerByUser($userId);
+        if (
+            (!!$myselfQuestions || count($myselfQuestions) === 0) &&
+            (!!$myselfAnswers || count($myselfAnswers) === 0)
+        ) {
+            $status = 0;
+            $message = '获取数据成功';
+        } else {
+            $status = 1;
+            $message = '获取数据失败';
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "myselfQuestions" => $myselfQuestions,
+                    "myselfAnswers" => $myselfAnswers
                 )
             )
         );

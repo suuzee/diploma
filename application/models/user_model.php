@@ -14,4 +14,11 @@ class User_model extends CI_Model {
         ));
         return $query -> row();
 	}
+
+    public function  getUser($id) {
+        $query = $this -> db -> get_where('t_users', array(
+            'user_id' => $id
+        ));
+        return $query -> row();
+    }
 }

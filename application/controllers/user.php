@@ -64,4 +64,23 @@ class User extends CI_Controller {
         $this -> session -> unset_userdata('login_user');
         redirect('//q.qunarzz.com/diploma');
     }
+
+    public function getUser() {
+        $status = 0;
+        $message = '';
+        $userId = $this -> input -> get('userId');
+        $user = $this -> user_model -> getUser($userId);
+
+        if (!!!$user) {
+            $status = 1;
+            $message = '获取信息失败';
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => $user
+            )
+        );
+    }
 }

@@ -19,4 +19,11 @@ class Like_model extends CI_Model {
         $query = $this -> db -> get_where('t_likes', $like);
         return $query -> row();
     }
+
+    public function getLikeNumByUser ($id) {
+        $query = $this -> db -> get_where('t_likes', array(
+            'user_id' => $id
+        ));
+        return !!($query -> num_rows()) ? $query -> num_rows() : 0;
+    }
 }
