@@ -136,7 +136,7 @@ class Question extends CI_Controller {
         $status = 0;
         $message = '';
         $userId = $this -> input -> get("userId");
-        $myselfQuestions = $this -> question_model -> getQuestions($userId);
+        $myselfQuestions = $this -> question_model -> getQuestionsById($userId);
         $myselfAnswers = $this -> question_model -> getAnswerByUser($userId);
         if (
             (!!$myselfQuestions || count($myselfQuestions) === 0) &&
@@ -159,4 +159,10 @@ class Question extends CI_Controller {
             )
         );
     }
+
+    public function addLook() {
+        $questionId = $this -> input -> get('questionId');
+        $this -> question_model -> addLook($questionId);
+    }
+
 }

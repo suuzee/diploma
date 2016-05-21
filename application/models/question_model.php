@@ -12,13 +12,19 @@ class Question_model extends CI_Model {
         $this -> db -> insert('t_tag_item', $data);
     }
 
-    public function getQuestions($id) {
+    public function getQuestions() {
         $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
         $this -> db -> from('t_questions q');
         $this -> db -> join('t_users u', 'q.question_author=u.user_id');
-        if (!!$id) {
-            $this -> db -> where('q.question_author', $id);
-        }
+        $this -> db -> order_by('q.question_date', 'desc');
+        return $this -> db -> get() -> result();
+    }
+
+    public function getQuestionsById($id) {
+        $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
+        $this -> db -> from('t_questions q');
+        $this -> db -> join('t_users u', 'q.question_author=u.user_id');
+        $this -> db -> where('q.question_author', $id);
         $this -> db -> order_by('q.question_date', 'desc');
         return $this -> db -> get() -> result();
     }
@@ -69,6 +75,12 @@ class Question_model extends CI_Model {
         $this -> db -> join('t_users u', 'u.user_id=a.answer_author');
         $this -> db -> where('a.answer_author', $id);
         return $this -> db -> get() -> result();
+    }
+
+    public function addLook($id) {
+        $this -> db -> set("question_look", "question_look+1", FALSE);
+		$this -> db -> where("question_id", $id);
+		$this -> db -> update("t_questions");
     }
 
 }
