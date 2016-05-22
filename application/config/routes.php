@@ -56,3 +56,6 @@ $route['translate_uri_dashes'] = FALSE;
 
 $route['(:any)'] = 'welcome/$1';
 $route['(:any)/(:num)'] = 'welcome/$1/$2';
+
+$route['admin/(:any)'] = 'admin/welcome/$1';
+$route['admin/(:any)/(:num)'] = 'admin/welcome/$1/$2';

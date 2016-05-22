@@ -83,4 +83,27 @@ class User extends CI_Controller {
             )
         );
     }
+
+    public function checkEmail() {
+        $status = 0;
+        $message = '';
+        $email = $this -> input -> get('email');
+        $result = $this -> user_model -> checkEmail($email);
+        if (!!!$result) {
+            $message = 'success';
+        } else {
+            $message = 'fail';
+        }
+
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "message" => $message
+                )
+            )
+        );
+
+    }
 }

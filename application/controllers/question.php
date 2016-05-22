@@ -10,6 +10,7 @@ class Question extends CI_Controller {
 		$this -> load -> model('like_model');
 		$this -> load -> model('tag_model');
 		$this -> load -> model('collect_model');
+		$this -> load -> model('inform_model');
 	}
 
     public function getQuestionsByTag() {
@@ -22,7 +23,7 @@ class Question extends CI_Controller {
             $status = 1;
             $message = '获取列表失败';
         } else {
-            $userId = $this -> session -> userdata('login_user') -> user_id;
+            $user = $this -> session -> userdata('login_user');
             foreach ($questions as $question) {
                 $questionId = $question -> question_id;
                 // 查标签
@@ -30,16 +31,31 @@ class Question extends CI_Controller {
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
                 // 看是否收藏
-                $isCollect = $this -> collect_model -> checkIsCollect(array(
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ));
-                if (!!$isCollect) {
-                    $question -> isCollect = true;
-                    $question -> noCollect = false;
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    $isCollect = $this -> collect_model -> checkIsCollect(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isCollect) {
+                        $question -> isCollect = true;
+                        $question -> noCollect = false;
+                    } else {
+                        $question -> isCollect = false;
+                        $question -> noCollect = true;
+                    }
+
+                    $isInformq = $this -> inform_model -> checkIsInformq(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isInformq) {
+                        $question -> isInformq = 'disabled';
+                    } else {
+                        $question -> isInformq = '';
+                    }
                 } else {
-                    $question -> isCollect = false;
-                    $question -> noCollect = true;
+                    $question -> isInformq = 'disabled';
                 }
             }
         }
@@ -83,7 +99,7 @@ class Question extends CI_Controller {
             $status = 1;
             $message = '获取列表失败';
         } else {
-            $userId = $this -> session -> userdata('login_user') -> user_id;
+            $user = $this -> session -> userdata('login_user');
             foreach ($questions as $question) {
                 $questionId = $question -> question_id;
                 // 查标签
@@ -91,16 +107,31 @@ class Question extends CI_Controller {
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
                 // 看是否收藏
-                $isCollect = $this -> collect_model -> checkIsCollect(array(
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ));
-                if (!!$isCollect) {
-                    $question -> isCollect = true;
-                    $question -> noCollect = false;
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    $isCollect = $this -> collect_model -> checkIsCollect(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isCollect) {
+                        $question -> isCollect = true;
+                        $question -> noCollect = false;
+                    } else {
+                        $question -> isCollect = false;
+                        $question -> noCollect = true;
+                    }
+
+                    $isInformq = $this -> inform_model -> checkIsInformq(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isInformq) {
+                        $question -> isInformq = 'disabled';
+                    } else {
+                        $question -> isInformq = '';
+                    }
                 } else {
-                    $question -> isCollect = false;
-                    $question -> noCollect = true;
+                    $question -> isInformq = 'disabled';
                 }
             }
         }
@@ -124,10 +155,38 @@ class Question extends CI_Controller {
             $status = 1;
             $message = '获取问题失败';
         } else {
+            $user = $this -> session -> userdata('login_user');
             // 查标签
             $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
             // 查评论数
             $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+            // 看是否收藏
+            if (!!$user) {
+                $userId = $user -> user_id;
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
+
+                $isInformq = $this -> inform_model -> checkIsInformq(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isInformq) {
+                    $question -> isInformq = 'disabled';
+                } else {
+                    $question -> isInformq = '';
+                }
+            } else {
+                $question -> isInformq = 'disabled';
+            }
         }
         echo json_encode(
             array(
@@ -213,10 +272,10 @@ class Question extends CI_Controller {
     public function getQuestionByUserId () {
         $status = 0;
         $message = '';
-        $userId = $this -> input -> get("userId");
-        $myselfQuestions = $this -> question_model -> getQuestionsById($userId);
-        $myselfAnswers = $this -> question_model -> getAnswerByUser($userId);
-        $myselfCollects = $this -> question_model -> getCollectByUser($userId);
+        $master = $this -> input -> get("userId");
+        $myselfQuestions = $this -> question_model -> getQuestionsById($master);
+        $myselfAnswers = $this -> question_model -> getAnswerByUser($master);
+        $myselfCollects = $this -> question_model -> getCollectByUser($master);
         if (
             (!!$myselfQuestions || count($myselfQuestions) === 0) &&
             (!!$myselfAnswers || count($myselfAnswers) === 0) &&
@@ -224,22 +283,39 @@ class Question extends CI_Controller {
         ) {
             $status = 0;
             $message = '获取数据成功';
+            $user = $this -> session -> userdata('login_user');
             foreach ($myselfQuestions as $question) {
                 $questionId = $question -> question_id;
                 // 查标签
                 $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
-                $isCollect = $this -> collect_model -> checkIsCollect(array(
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ));
-                if (!!$isCollect) {
-                    $question -> isCollect = true;
-                    $question -> noCollect = false;
+                // 看是否收藏
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    $isCollect = $this -> collect_model -> checkIsCollect(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isCollect) {
+                        $question -> isCollect = true;
+                        $question -> noCollect = false;
+                    } else {
+                        $question -> isCollect = false;
+                        $question -> noCollect = true;
+                    }
+
+                    $isInformq = $this -> inform_model -> checkIsInformq(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isInformq) {
+                        $question -> isInformq = 'disabled';
+                    } else {
+                        $question -> isInformq = '';
+                    }
                 } else {
-                    $question -> isCollect = false;
-                    $question -> noCollect = true;
+                    $question -> isInformq = 'disabled';
                 }
             }
 
@@ -249,16 +325,32 @@ class Question extends CI_Controller {
                 $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
-                $isCollect = $this -> collect_model -> checkIsCollect(array(
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ));
-                if (!!$isCollect) {
-                    $question -> isCollect = true;
-                    $question -> noCollect = false;
+                // 看是否收藏
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    $isCollect = $this -> collect_model -> checkIsCollect(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isCollect) {
+                        $question -> isCollect = true;
+                        $question -> noCollect = false;
+                    } else {
+                        $question -> isCollect = false;
+                        $question -> noCollect = true;
+                    }
+
+                    $isInformq = $this -> inform_model -> checkIsInformq(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isInformq) {
+                        $question -> isInformq = 'disabled';
+                    } else {
+                        $question -> isInformq = '';
+                    }
                 } else {
-                    $question -> isCollect = false;
-                    $question -> noCollect = true;
+                    $question -> isInformq = 'disabled';
                 }
             }
 
@@ -268,16 +360,32 @@ class Question extends CI_Controller {
                 $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
-                $isCollect = $this -> collect_model -> checkIsCollect(array(
-                    'user_id' => $userId,
-                    'question_id' => $questionId
-                ));
-                if (!!$isCollect) {
-                    $question -> isCollect = true;
-                    $question -> noCollect = false;
+                // 看是否收藏
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    $isCollect = $this -> collect_model -> checkIsCollect(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isCollect) {
+                        $question -> isCollect = true;
+                        $question -> noCollect = false;
+                    } else {
+                        $question -> isCollect = false;
+                        $question -> noCollect = true;
+                    }
+
+                    $isInformq = $this -> inform_model -> checkIsInformq(array(
+                        'user_id' => $userId,
+                        'question_id' => $questionId
+                    ));
+                    if (!!$isInformq) {
+                        $question -> isInformq = 'disabled';
+                    } else {
+                        $question -> isInformq = '';
+                    }
                 } else {
-                    $question -> isCollect = false;
-                    $question -> noCollect = true;
+                    $question -> isInformq = 'disabled';
                 }
             }
         } else {

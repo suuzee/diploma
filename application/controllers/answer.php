@@ -8,6 +8,7 @@ class Answer extends CI_Controller {
 		$this -> load -> model('answer_model');
 		$this -> load -> model('like_model');
 		$this -> load -> model('comment_model');
+		$this -> load -> model('inform_model');
 	}
 
     public function getAnswerNum() {
@@ -42,7 +43,7 @@ class Answer extends CI_Controller {
         $questionId = $this -> input -> get('questionId');
         $answers = $this -> answer_model -> getAnswers($questionId);
         $answerLength = count($answers);
-        $userId = $this -> session -> userdata('login_user') -> user_id;
+        $user = $this -> session -> userdata('login_user');
         if (!!$answers || $answerLength == 0) {
             foreach ($answers as $answer) {
                 $answerId = $answer -> answer_id;
@@ -50,13 +51,29 @@ class Answer extends CI_Controller {
                 $answer -> commentNum = $this -> comment_model -> getAnswerCommentNum($answerId);
                 // 查点赞数
                 $answer -> likeNum = $this -> like_model -> getAnswerLikeNum($answerId);
-                // 查看是否还可以点赞
-                $like = array(
-                    'user_id' => $userId,
-                    'answer_id' => $answerId
-                );
-                $isLike = $this -> like_model -> checkIsLike($like);
-                $answer -> isLike = !! $isLike ? 'disabled' : '';
+                if (!!$user) {
+                    $userId = $user -> user_id;
+                    // 查看是否还可以点赞
+                    $like = array(
+                        'user_id' => $userId,
+                        'answer_id' => $answerId
+                    );
+                    $isLike = $this -> like_model -> checkIsLike($like);
+                    $answer -> isLike = !! $isLike ? 'disabled' : '';
+
+                    $isInforma = $this -> inform_model -> checkIsInforma(array(
+                        'user_id' => $userId,
+                        'answer_id' => $answerId
+                    ));
+                    if (!!$isInforma) {
+                        $answer -> isInforma = 'disabled';
+                    } else {
+                        $answer -> isInforma = '';
+                    }
+                } else {
+                    $answer -> isInforma = 'disabled';
+                    $answer -> isLike = 'disabled';
+                }
             }
         } else {
             $status = 1;

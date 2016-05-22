@@ -21,4 +21,23 @@ class User_model extends CI_Model {
         ));
         return $query -> row();
     }
+
+    public function getUserNum() {
+        $query = $this -> db -> get('t_users');
+        return !!($query -> num_rows()) ? $query -> num_rows() : 0;
+    }
+
+    public function getUserPage($start, $pagesize){
+		$this -> db -> select("*");
+		$this -> db -> from("t_users");
+		$this -> db -> limit($pagesize, $start);
+		return $this -> db -> get() -> result();
+	}
+
+    public function checkEmail($email) {
+        $query = $this -> db -> get_where('t_users', array(
+            'user_email' => $email
+        ));
+        return $query -> row();
+    }
 }

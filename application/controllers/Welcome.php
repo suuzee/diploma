@@ -3,8 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Welcome extends CI_Controller {
 
-    public function __constructor() {
-        parent::__constructor();
+    public function __construct() {
+        parent::__construct();
     }
 
 	public function index() {
@@ -34,5 +34,9 @@ class Welcome extends CI_Controller {
 
     public function tag() {
         $this -> load -> view('front/tag.html');
+    }
+
+    public function admin() {
+        $this -> load -> view('admin/login');
     }
 }

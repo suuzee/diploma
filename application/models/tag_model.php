@@ -28,4 +28,9 @@ class Tag_model extends CI_Model {
         ));
         return $query -> row();
     }
+
+    public function getTagNum() {
+        $query = $this -> db -> get('t_tags');
+        return !!($query -> num_rows()) ? $query -> num_rows() : 0;
+    }
 }
