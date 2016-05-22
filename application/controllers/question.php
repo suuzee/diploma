@@ -8,7 +8,72 @@ class Question extends CI_Controller {
 		$this -> load -> model('question_model');
 		$this -> load -> model('answer_model');
 		$this -> load -> model('like_model');
+		$this -> load -> model('tag_model');
+		$this -> load -> model('collect_model');
 	}
+
+    public function getQuestionsByTag() {
+        $status = 0;
+        $message = '';
+        $tagId = $this -> input -> get('tagId');
+        $questions = $this -> question_model -> getQuestionsByTag($tagId);
+        $tagName = $this -> tag_model -> getTagName($tagId) -> tag_name;
+        if (!!!$questions) {
+            $status = 1;
+            $message = '获取列表失败';
+        } else {
+            $userId = $this -> session -> userdata('login_user') -> user_id;
+            foreach ($questions as $question) {
+                $questionId = $question -> question_id;
+                // 查标签
+                $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+                // 查评论数
+                $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+                // 看是否收藏
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
+            }
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "questions" => $questions,
+                    "tagName" => $tagName
+                )
+            )
+        );
+    }
+
+    public function getHotQuestions() {
+        $status = 0;
+        $message = '';
+        $questions = $this -> question_model -> getHotQuestions();
+        if (!!!$questions) {
+            $status = 1;
+            $message = '获取列表失败';
+        } else {
+        }
+        echo json_encode(
+            array(
+                "status" => $status,
+                "message" => $message,
+                "data" => array(
+                    "questions" => $questions
+                )
+            )
+        );
+    }
 
     public function getQuestions() {
         $status = 0;
@@ -18,12 +83,25 @@ class Question extends CI_Controller {
             $status = 1;
             $message = '获取列表失败';
         } else {
+            $userId = $this -> session -> userdata('login_user') -> user_id;
             foreach ($questions as $question) {
                 $questionId = $question -> question_id;
                 // 查标签
                 $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
                 // 查评论数
                 $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+                // 看是否收藏
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
             }
         }
         echo json_encode(
@@ -138,12 +216,70 @@ class Question extends CI_Controller {
         $userId = $this -> input -> get("userId");
         $myselfQuestions = $this -> question_model -> getQuestionsById($userId);
         $myselfAnswers = $this -> question_model -> getAnswerByUser($userId);
+        $myselfCollects = $this -> question_model -> getCollectByUser($userId);
         if (
             (!!$myselfQuestions || count($myselfQuestions) === 0) &&
-            (!!$myselfAnswers || count($myselfAnswers) === 0)
+            (!!$myselfAnswers || count($myselfAnswers) === 0) &&
+            (!!$myselfCollects || count($myselfCollects) === 0)
         ) {
             $status = 0;
             $message = '获取数据成功';
+            foreach ($myselfQuestions as $question) {
+                $questionId = $question -> question_id;
+                // 查标签
+                $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+                // 查评论数
+                $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
+            }
+
+            foreach ($myselfAnswers as $question) {
+                $questionId = $question -> question_id;
+                // 查标签
+                $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+                // 查评论数
+                $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
+            }
+
+            foreach ($myselfCollects as $question) {
+                $questionId = $question -> question_id;
+                // 查标签
+                $question -> question_tags = $this -> question_model -> getQuestionTag($questionId);
+                // 查评论数
+                $question -> answerNum = $this -> answer_model -> getQuestionAnswerNum($questionId);
+                $isCollect = $this -> collect_model -> checkIsCollect(array(
+                    'user_id' => $userId,
+                    'question_id' => $questionId
+                ));
+                if (!!$isCollect) {
+                    $question -> isCollect = true;
+                    $question -> noCollect = false;
+                } else {
+                    $question -> isCollect = false;
+                    $question -> noCollect = true;
+                }
+            }
         } else {
             $status = 1;
             $message = '获取数据失败';
@@ -154,7 +290,8 @@ class Question extends CI_Controller {
                 "message" => $message,
                 "data" => array(
                     "myselfQuestions" => $myselfQuestions,
-                    "myselfAnswers" => $myselfAnswers
+                    "myselfAnswers" => $myselfAnswers,
+                    "myselfCollects" => $myselfCollects
                 )
             )
         );

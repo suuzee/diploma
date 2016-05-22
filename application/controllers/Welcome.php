@@ -31,4 +31,8 @@ class Welcome extends CI_Controller {
     public function question() {
         $this -> load -> view('front/question.html');
     }
+
+    public function tag() {
+        $this -> load -> view('front/tag.html');
+    }
 }

@@ -21,4 +21,11 @@ class Tag_model extends CI_Model {
         ));
         return $query -> row();
     }
+
+    public function getTagName($id) {
+        $query = $this -> db -> get_where('t_tags', array(
+            'tag_id' => $id
+        ));
+        return $query -> row();
+    }
 }

@@ -20,6 +20,24 @@ class Question_model extends CI_Model {
         return $this -> db -> get() -> result();
     }
 
+    public function getHotQuestions() {
+        $this -> db -> select('*');
+        $this -> db -> from('t_questions');
+        $this -> db -> order_by('question_look', 'desc');
+        $this -> db -> limit(5);
+        return $this -> db -> get() -> result();
+    }
+
+    public function getQuestionsByTag($id) {
+        $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
+        $this -> db -> from('t_questions q');
+        $this -> db -> join('t_users u', 'q.question_author=u.user_id');
+        $this -> db -> join('t_tag_item i', 'i.question_id=q.question_id');
+        $this -> db -> where('i.tag_id', $id);
+        $this -> db -> order_by('q.question_date', 'desc');
+        return $this -> db -> get() -> result();
+    }
+
     public function getQuestionsById($id) {
         $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
         $this -> db -> from('t_questions q');
@@ -69,11 +87,20 @@ class Question_model extends CI_Model {
     }
 
     public function getAnswerByUser($id) {
-        $this -> db -> select('*');
+        $this -> db -> select('*, q.question_look lookNum');
         $this -> db -> from('t_answers a');
         $this -> db -> join('t_questions q', 'a.question_id=q.question_id');
         $this -> db -> join('t_users u', 'u.user_id=a.answer_author');
         $this -> db -> where('a.answer_author', $id);
+        return $this -> db -> get() -> result();
+    }
+
+    public function getCollectByUser($id) {
+        $this -> db -> select('*, q.question_look lookNum');
+        $this -> db -> from('t_collects c');
+        $this -> db -> join('t_questions q', 'c.question_id=q.question_id');
+        $this -> db -> join('t_users u', 'u.user_id=c.user_id');
+        $this -> db -> where('c.user_id', $id);
         return $this -> db -> get() -> result();
     }
 

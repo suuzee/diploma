@@ -43,7 +43,7 @@ class Answer extends CI_Controller {
         $answers = $this -> answer_model -> getAnswers($questionId);
         $answerLength = count($answers);
         $userId = $this -> session -> userdata('login_user') -> user_id;
-        if (!!$answers || $answerLength = 0) {
+        if (!!$answers || $answerLength == 0) {
             foreach ($answers as $answer) {
                 $answerId = $answer -> answer_id;
                 // 查评论数
