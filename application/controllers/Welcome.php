@@ -39,4 +39,8 @@ class Welcome extends CI_Controller {
     public function admin() {
         $this -> load -> view('admin/login');
     }
+
+    public function search() {
+        $this -> load -> view('front/search.html');
+    }
 }

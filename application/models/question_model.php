@@ -12,16 +12,19 @@ class Question_model extends CI_Model {
         $this -> db -> insert('t_tag_item', $data);
     }
 
-    public function getQuestions() {
+    public function getQuestions($keyword) {
         $this -> db -> select('q.*, u.user_name, u.user_avatar, u.user_desc, q.question_look lookNum');
         $this -> db -> from('t_questions q');
         $this -> db -> join('t_users u', 'q.question_author=u.user_id');
         $this -> db -> where('q.question_show', 0);
+        if (!!$keyword) {
+            $this -> db -> like('question_title', $keyword);
+        }
         $this -> db -> order_by('q.question_date', 'desc');
         return $this -> db -> get() -> result();
     }
 
-    public function getHotQuestions() {
+    public function getHotQuestions($keyword) {
         $this -> db -> select('*');
         $this -> db -> from('t_questions');
         $this -> db -> where('question_show', 0);

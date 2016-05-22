@@ -94,7 +94,11 @@ class Question extends CI_Controller {
     public function getQuestions() {
         $status = 0;
         $message = '';
-        $questions = $this -> question_model -> getQuestions();
+        $keyword = $this -> input -> get("keyword");
+        if (!!!$keyword) {
+            $keyword = null;
+        }
+        $questions = $this -> question_model -> getQuestions($keyword);
         if (!!!$questions) {
             $status = 1;
             $message = '获取列表失败';
